@@ -1,0 +1,15 @@
+# Virtual Environment
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# Data & Models
+data/candidates.jsonl.gz
+data/candidates.jsonl
+models/bge-small-en-v1.5/
+models/precomputed/
+
+# IDE files
+.vscode/
+.DS_Store

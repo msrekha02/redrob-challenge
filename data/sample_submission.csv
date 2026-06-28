@@ -1,0 +1,101 @@
+candidate_id,rank,score,reasoning
+CAND_0004989,1,0.992,HR Manager with 6.1 yrs; 9 AI core skills; response rate 0.76.
+CAND_0004990,2,0.984,HR Manager with 8.7 yrs; 9 AI core skills; response rate 0.20.
+CAND_0004991,3,0.976,ML Engineer with 6.4 yrs; 4 AI core skills; response rate 0.88.
+CAND_0004992,4,0.968,Content Writer with 8.3 yrs; 8 AI core skills; response rate 0.72.
+CAND_0004993,5,0.96,HR Manager with 5.0 yrs; 8 AI core skills; response rate 0.62.
+CAND_0004994,6,0.952,Graphic Designer with 10.4 yrs; 9 AI core skills; response rate 0.56.
+CAND_0004995,7,0.944,Business Analyst with 5.1 yrs; 8 AI core skills; response rate 0.54.
+CAND_0004996,8,0.936,Content Writer with 8.3 yrs; 8 AI core skills; response rate 0.53.
+CAND_0004997,9,0.928,Marketing Manager with 8.0 yrs; 8 AI core skills; response rate 0.32.
+CAND_0004998,10,0.92,HR Manager with 7.3 yrs; 8 AI core skills; response rate 0.30.
+CAND_0004999,11,0.912,Marketing Manager with 13.2 yrs; 9 AI core skills; response rate 0.24.
+CAND_0005000,12,0.904,Mechanical Engineer with 6.9 yrs; 8 AI core skills; response rate 0.18.
+CAND_0005001,13,0.896,Accountant with 14.2 yrs; 9 AI core skills; response rate 0.18.
+CAND_0005002,14,0.888,Civil Engineer with 8.0 yrs; 8 AI core skills; response rate 0.15.
+CAND_0005003,15,0.88,Accountant with 8.2 yrs; 8 AI core skills; response rate 0.15.
+CAND_0005004,16,0.872,Graphic Designer with 5.0 yrs; 8 AI core skills; response rate 0.11.
+CAND_0005005,17,0.864,Project Manager with 5.0 yrs; 8 AI core skills; response rate 0.10.
+CAND_0005006,18,0.856,Accountant with 7.4 yrs; 8 AI core skills; response rate 0.06.
+CAND_0005007,19,0.848,Sales Executive with 7.8 yrs; 8 AI core skills; response rate 0.06.
+CAND_0005008,20,0.84,Sales Executive with 7.2 yrs; 7 AI core skills; response rate 0.77.
+CAND_0005009,21,0.832,Operations Manager with 13.5 yrs; 8 AI core skills; response rate 0.77.
+CAND_0005010,22,0.824,Business Analyst with 11.3 yrs; 8 AI core skills; response rate 0.76.
+CAND_0005011,23,0.816,Accountant with 14.1 yrs; 8 AI core skills; response rate 0.75.
+CAND_0005012,24,0.808,Mechanical Engineer with 13.7 yrs; 8 AI core skills; response rate 0.75.
+CAND_0005013,25,0.8,Marketing Manager with 2.0 yrs; 8 AI core skills; response rate 0.73.
+CAND_0005014,26,0.792,Project Manager with 10.2 yrs; 8 AI core skills; response rate 0.71.
+CAND_0005015,27,0.784,AI Engineer with 6.1 yrs; 3 AI core skills; response rate 0.71.
+CAND_0005016,28,0.776,Business Analyst with 11.4 yrs; 8 AI core skills; response rate 0.65.
+CAND_0005017,29,0.768,Operations Manager with 6.5 yrs; 7 AI core skills; response rate 0.60.
+CAND_0005018,30,0.76,Mechanical Engineer with 4.5 yrs; 8 AI core skills; response rate 0.59.
+CAND_0005019,31,0.752,AI Engineer with 6.6 yrs; 3 AI core skills; response rate 0.57.
+CAND_0005020,32,0.744,Mechanical Engineer with 4.4 yrs; 8 AI core skills; response rate 0.57.
+CAND_0005021,33,0.736,Operations Manager with 3.2 yrs; 8 AI core skills; response rate 0.55.
+CAND_0005022,34,0.728,Graphic Designer with 6.0 yrs; 7 AI core skills; response rate 0.54.
+CAND_0005023,35,0.72,HR Manager with 8.5 yrs; 7 AI core skills; response rate 0.53.
+CAND_0005024,36,0.712,Mechanical Engineer with 8.0 yrs; 7 AI core skills; response rate 0.53.
+CAND_0005025,37,0.704,Mechanical Engineer with 6.9 yrs; 7 AI core skills; response rate 0.52.
+CAND_0005026,38,0.696,Civil Engineer with 6.4 yrs; 7 AI core skills; response rate 0.52.
+CAND_0005027,39,0.688,Project Manager with 6.5 yrs; 7 AI core skills; response rate 0.52.
+CAND_0005028,40,0.68,Project Manager with 5.6 yrs; 7 AI core skills; response rate 0.51.
+CAND_0005029,41,0.672,Business Analyst with 3.0 yrs; 8 AI core skills; response rate 0.50.
+CAND_0005030,42,0.664,Graphic Designer with 6.0 yrs; 7 AI core skills; response rate 0.44.
+CAND_0005031,43,0.656,Civil Engineer with 14.3 yrs; 8 AI core skills; response rate 0.43.
+CAND_0005032,44,0.648,Customer Support with 6.6 yrs; 7 AI core skills; response rate 0.41.
+CAND_0005033,45,0.64,Marketing Manager with 6.3 yrs; 7 AI core skills; response rate 0.39.
+CAND_0005034,46,0.632,Accountant with 3.7 yrs; 8 AI core skills; response rate 0.39.
+CAND_0005035,47,0.624,Customer Support with 11.5 yrs; 8 AI core skills; response rate 0.39.
+CAND_0005036,48,0.616,ML Engineer with 6.0 yrs; 3 AI core skills; response rate 0.38.
+CAND_0005037,49,0.608,ML Engineer with 3.6 yrs; 4 AI core skills; response rate 0.36.
+CAND_0005038,50,0.6,Operations Manager with 14.2 yrs; 8 AI core skills; response rate 0.35.
+CAND_0005039,51,0.592,Content Writer with 9.9 yrs; 8 AI core skills; response rate 0.35.
+CAND_0005040,52,0.584,Accountant with 1.8 yrs; 8 AI core skills; response rate 0.33.
+CAND_0005041,53,0.576,Graphic Designer with 6.9 yrs; 7 AI core skills; response rate 0.26.
+CAND_0005042,54,0.568,HR Manager with 6.2 yrs; 7 AI core skills; response rate 0.26.
+CAND_0005043,55,0.56,Mechanical Engineer with 8.5 yrs; 7 AI core skills; response rate 0.25.
+CAND_0005044,56,0.552,Marketing Manager with 14.6 yrs; 8 AI core skills; response rate 0.25.
+CAND_0005045,57,0.544,Operations Manager with 13.4 yrs; 8 AI core skills; response rate 0.25.
+CAND_0005046,58,0.536,Operations Manager with 7.7 yrs; 7 AI core skills; response rate 0.24.
+CAND_0005047,59,0.528,Accountant with 1.0 yrs; 8 AI core skills; response rate 0.24.
+CAND_0005048,60,0.52,Sales Executive with 11.4 yrs; 8 AI core skills; response rate 0.23.
+CAND_0005049,61,0.512,Content Writer with 13.6 yrs; 8 AI core skills; response rate 0.22.
+CAND_0005050,62,0.504,Content Writer with 14.2 yrs; 8 AI core skills; response rate 0.22.
+CAND_0005051,63,0.496,HR Manager with 3.0 yrs; 8 AI core skills; response rate 0.21.
+CAND_0005052,64,0.488,Mechanical Engineer with 7.4 yrs; 7 AI core skills; response rate 0.20.
+CAND_0005053,65,0.48,Project Manager with 13.9 yrs; 8 AI core skills; response rate 0.20.
+CAND_0005054,66,0.472,Customer Support with 7.6 yrs; 7 AI core skills; response rate 0.16.
+CAND_0005055,67,0.464,Mechanical Engineer with 4.4 yrs; 8 AI core skills; response rate 0.16.
+CAND_0005056,68,0.456,Sales Executive with 8.5 yrs; 7 AI core skills; response rate 0.14.
+CAND_0005057,69,0.448,Business Analyst with 4.3 yrs; 8 AI core skills; response rate 0.13.
+CAND_0005058,70,0.44,Project Manager with 5.3 yrs; 7 AI core skills; response rate 0.13.
+CAND_0005059,71,0.432,HR Manager with 6.3 yrs; 7 AI core skills; response rate 0.12.
+CAND_0005060,72,0.424,Operations Manager with 11.0 yrs; 8 AI core skills; response rate 0.11.
+CAND_0005061,73,0.416,Marketing Manager with 11.6 yrs; 8 AI core skills; response rate 0.07.
+CAND_0005062,74,0.408,Junior ML Engineer with 6.9 yrs; 2 AI core skills; response rate 0.86.
+CAND_0005063,75,0.4,Senior Machine Learning Engineer with 6.3 yrs; 6 AI core skills; response rate 0.83.
+CAND_0005064,76,0.392,Project Manager with 13.9 yrs; 7 AI core skills; response rate 0.77.
+CAND_0005065,77,0.384,Content Writer with 8.2 yrs; 6 AI core skills; response rate 0.77.
+CAND_0005066,78,0.376,HR Manager with 1.9 yrs; 7 AI core skills; response rate 0.76.
+CAND_0005067,79,0.368,Civil Engineer with 5.6 yrs; 6 AI core skills; response rate 0.76.
+CAND_0005068,80,0.36,Civil Engineer with 11.2 yrs; 7 AI core skills; response rate 0.76.
+CAND_0005069,81,0.352,HR Manager with 12.6 yrs; 7 AI core skills; response rate 0.75.
+CAND_0005070,82,0.344,Accountant with 3.0 yrs; 7 AI core skills; response rate 0.73.
+CAND_0005071,83,0.336,Sales Executive with 13.3 yrs; 7 AI core skills; response rate 0.73.
+CAND_0005072,84,0.328,Project Manager with 11.0 yrs; 7 AI core skills; response rate 0.71.
+CAND_0005073,85,0.32,Mechanical Engineer with 11.9 yrs; 7 AI core skills; response rate 0.70.
+CAND_0005074,86,0.312,Sales Executive with 12.4 yrs; 7 AI core skills; response rate 0.69.
+CAND_0005075,87,0.304,Graphic Designer with 6.2 yrs; 6 AI core skills; response rate 0.69.
+CAND_0005076,88,0.296,Graphic Designer with 11.7 yrs; 7 AI core skills; response rate 0.68.
+CAND_0005077,89,0.288,Customer Support with 10.2 yrs; 7 AI core skills; response rate 0.67.
+CAND_0005078,90,0.28,Marketing Manager with 4.3 yrs; 7 AI core skills; response rate 0.66.
+CAND_0005079,91,0.272,Graphic Designer with 7.9 yrs; 6 AI core skills; response rate 0.65.
+CAND_0005080,92,0.264,Sales Executive with 10.2 yrs; 7 AI core skills; response rate 0.64.
+CAND_0005081,93,0.256,Mechanical Engineer with 2.4 yrs; 7 AI core skills; response rate 0.64.
+CAND_0005082,94,0.248,Content Writer with 7.2 yrs; 6 AI core skills; response rate 0.62.
+CAND_0005083,95,0.24,Civil Engineer with 7.4 yrs; 6 AI core skills; response rate 0.61.
+CAND_0005084,96,0.232,Civil Engineer with 12.9 yrs; 7 AI core skills; response rate 0.59.
+CAND_0005085,97,0.224,Operations Manager with 8.2 yrs; 6 AI core skills; response rate 0.58.
+CAND_0005086,98,0.216,Accountant with 3.6 yrs; 7 AI core skills; response rate 0.58.
+CAND_0005087,99,0.208,Data Scientist with 3.1 yrs; 3 AI core skills; response rate 0.57.
+CAND_0005088,100,0.2,Content Writer with 14.7 yrs; 7 AI core skills; response rate 0.57.

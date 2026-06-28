@@ -10,6 +10,7 @@ data/candidates.jsonl
 models/bge-small-en-v1.5/
 models/precomputed/
 exploratory_scripts/
+data/cleaned_candidates.jsonl
 
 # IDE files
 .vscode/

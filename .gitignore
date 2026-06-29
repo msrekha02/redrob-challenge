@@ -5,13 +5,16 @@ __pycache__/
 *.pyc
 
 # Data & Models
-data/candidates.jsonl.gz
-data/candidates.jsonl
-models/bge-small-en-v1.5/
-models/precomputed/
-exploratory_scripts/
-data/cleaned_candidates.jsonl
+models/
 
-# IDE files
+# Processed Intermediate Pipelines
+output/verified_clean_profiles.json
+output/verified_clean_profiles.csv
+
+# Allow tracking of the final target csv within the output directory
+!output/submission.csv
+
+# IDE & OS Noise
 .vscode/
 .DS_Store
+exploratory_scripts/

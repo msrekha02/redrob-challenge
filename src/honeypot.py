@@ -739,6 +739,7 @@ def check_instant_expert(candidate: dict[str, Any]) -> tuple[bool, list[str]]:
 
 MASTER_PREFIXES   = {"M.SC", "M.S", "MBA", "M.TECH", "M.E", "MASTER", "MTECH"}
 BACHELOR_PREFIXES = {"B.TECH", "B.SC", "BACHELOR", "B.E", "B.S", "BE", "BTECH"}
+PHD_PREFIXES = {"PH.D", "PHD", "DOCTOR OF PHILOSOPHY", "DOCTORATE"}
 
 
 def _is_master(degree: str) -> bool:
@@ -749,6 +750,10 @@ def _is_master(degree: str) -> bool:
 def _is_bachelor(degree: str) -> bool:
     d = degree.upper().strip().replace(".", "")
     return any(d.startswith(p.replace(".", "")) for p in BACHELOR_PREFIXES)
+
+def _is_phd(degree: str) -> bool:
+    d = degree.upper().strip().replace(".", "")
+    return any(d.startswith(p.replace(".", "")) for p in PHD_PREFIXES)
 
 
 def check_master_before_bachelor(candidate: dict[str, Any]) -> tuple[bool, list[str]]:
@@ -775,6 +780,58 @@ def check_master_before_bachelor(candidate: dict[str, Any]) -> tuple[bool, list[
                 )
     return bool(reasons), reasons
 
+# ===========================================================================
+# TRAP 7B — PhD Started Before Bachelor's Started
+# ===========================================================================
+# A PhD program requires a completed (or at minimum, already-begun)
+# Bachelor's degree as a prerequisite almost everywhere. This trap checks
+# enrolment sequencing, not completion sequencing — it is deliberately
+# separate from TRAP 7 (Master's Completed Before Bachelor's).
+#
+# Comparison anchor: PhD start_year < earliest Bachelor's start_year.
+#
+# Why start-year-vs-start-year and not start-year-vs-end-year:
+#   Using "PhD start < Bachelor's END" would false-positive on legitimate
+#   integrated/dual-degree tracks where a small administrative overlap
+#   exists between final-year UG and PhD enrolment. Anchoring on
+#   "PhD start < Bachelor's START" only catches the unambiguous
+#   impossibility — applying to or beginning a program that requires a
+#   degree you had not even started pursuing yet.
+
+def check_phd_before_bachelor(candidate: dict[str, Any]) -> tuple[bool, list[str]]:
+    """
+    TRAP 7B — PhD Started Before Bachelor's Started
+    Flags candidates whose earliest PhD start_year is strictly less than
+    their earliest Bachelor's start_year.
+    """
+    reasons: list[str] = []
+    education = candidate.get("education", [])
+    phds      = [e for e in education if _is_phd(e.get("degree", ""))]
+    bachelors = [e for e in education if _is_bachelor(e.get("degree", ""))]
+
+    if not phds or not bachelors:
+        return False, []
+
+    bachelor_starts = [
+        b.get("start_year") for b in bachelors
+        if isinstance(b.get("start_year"), int)
+    ]
+    if not bachelor_starts:
+        return False, []
+
+    earliest_bachelor_start = min(bachelor_starts)
+
+    for p in phds:
+        p_start = p.get("start_year")
+        if isinstance(p_start, int) and p_start < earliest_bachelor_start:
+            reasons.append(
+                f"[PHD_BEFORE_BACHELORS] {p['degree']} in "
+                f"'{p.get('field_of_study', '')}' started {p_start} but "
+                f"earliest Bachelor's degree did not start until "
+                f"{earliest_bachelor_start} — PhD cannot begin before "
+                f"the Bachelor's degree itself has started"
+            )
+    return bool(reasons), reasons
 
 # ===========================================================================
 # TRAP 8 — Corporate Career Started Before Graduation
@@ -1199,6 +1256,7 @@ ALL_CHECKS: list[tuple] = [
     (check_tech_invention_ceiling,              "TRAP 5  — Tech Skill Invention Ceiling"),
     (check_instant_expert,                      "TRAP 6  — Instant Expert Anomaly"),
     (check_master_before_bachelor,              "TRAP 7  — Master's Before Bachelor's"),
+    (check_phd_before_bachelor,                 "TRAP 7B — PhD Before Bachelor's"),
     (check_career_before_graduation,            "TRAP 8  — Career Before Graduation"),
     (check_date_inversions,                     "TRAP 9  — Date Inversions"),
     (check_employment_overlap,                  "TRAP 10 — Overlapping Employment"),

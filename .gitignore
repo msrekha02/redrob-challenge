@@ -21,6 +21,7 @@ verified_clean_profiles.csv
 # Allow tracking of the final competition target csv anywhere it lands
 !submission.csv
 !output/submission.csv
+src/submission.csv
 
 # IDE & OS Noise
 .vscode/

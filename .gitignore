@@ -6,16 +6,20 @@ __pycache__/
 *.pyo
 *.pyd
 
-# Data & Models
+# Data, Models, & Deep Learning Weights
 data/*
 !data/.gitkeep
 models/
+artifacts/
 
-# Processed Intermediate Pipelines
+# Processed Intermediate Pipelines (Wherever they are generated)
 output/verified_clean_profiles.json
 output/verified_clean_profiles.csv
+verified_clean_profiles.json
+verified_clean_profiles.csv
 
-# Allow tracking of the final target csv within the output directory
+# Allow tracking of the final competition target csv anywhere it lands
+!submission.csv
 !output/submission.csv
 
 # IDE & OS Noise

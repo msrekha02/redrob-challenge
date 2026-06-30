@@ -1,0 +1,38 @@
+# Redrob Intelligent Candidate Ranker — Dependencies
+# Install: pip install -r requirements.txt
+# Python 3.10+ required
+
+# ── Core ML & Embeddings (PyTorch path — also used by setup_models.py's
+#    download step, and as model_engine.py's automatic fallback if ONNX
+#    isn't available at ranking time) ───────────────────────────────────────
+sentence-transformers>=3.0.0        # BGE-small embedding + cross-encoder, PyTorch path
+transformers>=4.40.0                # tokenizers, also used directly by model_engine.py's ONNX path
+torch>=2.1.0                        # PT backend for sentence-transformers (CPU)
+
+# ── ONNX INT8 (architecture requirement — both the embedding model and the
+#    cross-encoder run as ONNX INT8 for CPU speed; see model_engine.py) ─────
+onnxruntime>=1.18.0                 # ONNX inference session
+optimum[onnxruntime]>=1.20.0        # HF model → ONNX export + INT8 quantization (setup_models.py)
+
+# ── Sparse Retrieval ──────────────────────────────────────────────────────────
+rank-bm25>=0.2.2                    # BM25Okapi
+
+# ── Numerical & Data ─────────────────────────────────────────────────────────
+numpy>=1.26.0
+scipy>=1.12.0                       # softmax, utilities
+
+# ── Document Parsing ─────────────────────────────────────────────────────────
+python-docx>=1.1.0                  # read .docx JDs
+
+# ── Utilities ─────────────────────────────────────────────────────────────────
+tqdm>=4.66.0                        # progress bars in offline pipeline
+
+# ── Development / Testing ─────────────────────────────────────────────────────
+# pytest>=8.0.0
+# pytest-cov>=5.0.0
+
+# NOTE on ONNX: if onnxruntime/optimum installation fails on your machine
+# (e.g. unsupported platform), the system still runs correctly — every
+# model-loading path in model_engine.py automatically falls back to the
+# PyTorch sentence-transformers models from the Core ML block above. ONNX
+# is a pure speed optimization, never a correctness dependency.

@@ -424,6 +424,14 @@ COMPLETENESS_LOW_PENALTY:    float = 0.15
 COMPLETENESS_MED_PENALTY:    float = 0.07
 HOLLOW_EXPERT_PER_SKILL:     float = 0.05
 HOLLOW_EXPERT_DEDUCTION_CAP: float = 0.20
+# P-21: Duplicate/near-duplicate career narrative across different roles —
+# a strong synthetic-profile-generation signal. A real person describing
+# genuinely different jobs writes genuinely different text, even when the
+# underlying work is similar.
+DUPLICATE_NARRATIVE_MIN_LENGTH:          int = 40    # chars — skip short one-liners, too generic to be meaningful
+DUPLICATE_NARRATIVE_SIMILARITY_THRESHOLD: float = 0.90  # difflib ratio — high bar, avoids flagging genuinely-similar real text
+DUPLICATE_NARRATIVE_PENALTY_PER_PAIR:    float = 0.25  # steeper than other integrity deductions — this is a stronger single signal
+DUPLICATE_NARRATIVE_PENALTY_CAP:         float = 0.35
 INTEGRITY_FLOOR:             float = 0.30
 
 # ─────────────────────────────────────────────────────────────────────────────

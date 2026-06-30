@@ -1329,8 +1329,8 @@ if __name__ == "__main__":
 
     # ---- Save outputs ----
     base_dir      = ".." if os.path.basename(os.getcwd()) == "src" else "."
-    json_out_path = os.path.join(base_dir, "data", "verified_clean_profiles.json")
-    csv_out_path  = os.path.join(base_dir, "data", "verified_clean_profiles.csv")
+    json_out_path = os.path.join(base_dir, "output", "verified_clean_profiles.json")
+    csv_out_path  = os.path.join(base_dir, "output", "verified_clean_profiles.csv")
 
     # JSON — full clean profiles
     try:

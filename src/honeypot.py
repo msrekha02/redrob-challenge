@@ -1,87 +1,156 @@
 """
-honeypot.py  ·  v2
 ===================
 Redrob Intelligent Candidate Discovery & Ranking Challenge
 ----------------------------------------------------------
 Detects honeypot / invalid candidates via profile-integrity checks.
 
-Each check is independent and returns a structured (fired, reasons) tuple.
-is_honeypot() aggregates all checks and returns a final verdict.
-
-TRAP REGISTRY
--------------
-TRAP 1  — Fictional Companies
-TRAP 2  — Company Founding Year Mismatch           (expanded company list)
-TRAP 3  — Degree Field Establishment Ceilings      (strict field matching)
-TRAP 4  — Impossible Degree Durations              (relaxed thresholds)
-TRAP 5  — Tech Skill Invention Ceiling             (skill-name normalisation)
-TRAP 6  — Instant Expert Anomaly
-TRAP 7  — Master's Completed Before Bachelor's
-TRAP 8  — Career Before Graduation                 (buffer: 20 months)
-TRAP 9  — Date Inversions                          (+ education sub-check)
-TRAP 10 — Overlapping Employment Periods           (tolerance: 30 days)
-TRAP 11 — YoE Exceeds Time Since Earliest Graduation
-TRAP 12 — Duration-Months vs Date-Range Inconsistency  [NEW]
-TRAP 13 — Multiple Concurrent Current Jobs             [NEW]
-TRAP 14 — Redrob Signal Range Violations               [NEW]
-
-v1 → v2 changes
-----------------
-TRAP 1  : Pre-normalise FICTIONAL_COMPANIES set so the suffix-stripping
-          normaliser produces consistent lookups ("ACME CORP" → "ACME"
-          both in the set and for input — fixed the v1 bug where the set
-          held "ACME CORP" but normalised input was "ACME").
-TRAP 2  : Added 70+ major Indian startups to the founding-year dict.
-TRAP 3  : Replaced substring match with startswith() — "Computer Science
-          and Artificial Intelligence" (a CS programme) is no longer
-          misflagged because it starts with "COMPUTER SCIENCE".
-TRAP 4  : Split into four tiers with relaxed thresholds:
-            M.TECH / M.E        ≥ 6 y  (was ≥ 4 y; allows integrated 5-y)
-            M.SC / M.S / MBA    ≥ 5 y  (was ≥ 4 y)
-            B.TECH / B.E        ≥ 7 y  (was ≥ 5 y; allows dual-degree 5-y)
-            B.SC / BACHELOR     ≥ 6 y  (was ≥ 5 y)
-TRAP 5  : Skill-name normalisation ("Llama Index" → "LLAMAINDEX", etc.)
-          and alias table for common spacing/hyphenation variants.
-TRAP 8  : Pre-graduation buffer extended 12 → 20 months (campus placements
-          in India routinely close 14–18 months before graduation).
-TRAP 9  : Added sub-check C — education date inversions (end < start) and
-          impossible future graduation dates.
-TRAP 10 : Overlap tolerance reduced 60 → 30 days; added early-exit
-          optimisation in the inner loop.
-TRAP 12 : [NEW] Flags career_history entries where the stated
-          duration_months differs from the computed date-range by > 3 months.
-TRAP 13 : [NEW] Flags candidates with is_current=True at > 1 distinct
-          companies simultaneously.
-TRAP 14 : [NEW] Flags numeric redrob_signals fields that fall outside their
-          schema-defined valid range.
-
-Reference date: 2026-06-29  (dataset snapshot — hardcoded intentionally).
-
-Usage
------
-    from honeypot import is_honeypot, filter_honeypots
-
-    with open("candidates.jsonl") as f:
-        for line in f:
-            candidate = json.loads(line)
-            result = is_honeypot(candidate)
-            if result["is_honeypot"]:
-                print(candidate["candidate_id"], result["reasons"])
 """
 
 from __future__ import annotations
 
+import os
 import re
 from datetime import date
 from typing import Any
+
+# ===========================================================================
+# JSON FIELD SANITISER
+# ===========================================================================
+# Coerces known schema fields to their correct types before any trap check
+# runs.  Prevents crashes and silent wrong-type bypasses caused by:
+#   - Numbers stored as strings  e.g. "years_of_experience": "7"
+#   - Booleans stored as 0/1     e.g. "open_to_work_flag": 1
+#   - Missing top-level keys     e.g. no "redrob_signals" block at all
+#   - None where a list is expected (education, career_history, skills)
+
+def sanitise_candidate(cand: dict[str, Any]) -> dict[str, Any]:
+    """
+    Coerce and default-fill a raw parsed candidate dict so all trap checks
+    receive the types they expect.  Mutates and returns the same dict.
+    """
+    # ── Top-level list fields: guarantee list, never None ──────────────────
+    for list_field in ("career_history", "education", "skills",
+                       "certifications", "languages"):
+        if not isinstance(cand.get(list_field), list):
+            cand[list_field] = []
+
+    # ── profile block ───────────────────────────────────────────────────────
+    profile = cand.get("profile")
+    if not isinstance(profile, dict):
+        cand["profile"] = {}
+        profile = cand["profile"]
+
+    # years_of_experience must be numeric
+    yoe = profile.get("years_of_experience")
+    if isinstance(yoe, str):
+        try:
+            profile["years_of_experience"] = float(yoe)
+        except ValueError:
+            profile["years_of_experience"] = 0.0
+    elif yoe is None:
+        profile["years_of_experience"] = 0.0
+
+    # ── redrob_signals block ────────────────────────────────────────────────
+    signals = cand.get("redrob_signals")
+    if not isinstance(signals, dict):
+        cand["redrob_signals"] = {}
+        signals = cand["redrob_signals"]
+
+    # Boolean fields: coerce 0/1 integers → bool
+    for bool_field in ("open_to_work_flag", "willing_to_relocate",
+                       "verified_email", "verified_phone", "linkedin_connected"):
+        val = signals.get(bool_field)
+        if isinstance(val, int) and not isinstance(val, bool):
+            signals[bool_field] = bool(val)
+
+    # Numeric float fields: coerce strings → float
+    for float_field in ("profile_completeness_score", "recruiter_response_rate",
+                        "interview_completion_rate", "offer_acceptance_rate",
+                        "github_activity_score", "avg_response_time_hours"):
+        val = signals.get(float_field)
+        if isinstance(val, str):
+            try:
+                signals[float_field] = float(val)
+            except ValueError:
+                signals[float_field] = None
+
+    # Numeric int fields: coerce strings → int
+    for int_field in ("notice_period_days", "profile_views_received_30d",
+                      "applications_submitted_30d", "connection_count",
+                      "endorsements_received", "search_appearance_30d",
+                      "saved_by_recruiters_30d"):
+        val = signals.get(int_field)
+        if isinstance(val, str):
+            try:
+                signals[int_field] = int(val)
+            except ValueError:
+                signals[int_field] = None
+
+    # skill_assessment_scores: must be a dict, never None
+    if not isinstance(signals.get("skill_assessment_scores"), dict):
+        signals["skill_assessment_scores"] = {}
+
+    # ── education entries ───────────────────────────────────────────────────
+    for edu in cand["education"]:
+        for year_field in ("start_year", "end_year"):
+            val = edu.get(year_field)
+            if isinstance(val, str):
+                try:
+                    edu[year_field] = int(val)
+                except ValueError:
+                    edu[year_field] = None
+
+    # ── career_history entries ──────────────────────────────────────────────
+    for job in cand["career_history"]:
+        # duration_months must be int
+        dur = job.get("duration_months")
+        if isinstance(dur, str):
+            try:
+                job["duration_months"] = int(dur)
+            except ValueError:
+                job["duration_months"] = 0
+        elif dur is None:
+            job["duration_months"] = 0
+
+        # is_current: coerce 0/1 → bool
+        ic = job.get("is_current")
+        if isinstance(ic, int) and not isinstance(ic, bool):
+            job["is_current"] = bool(ic)
+
+    # ── skills entries ──────────────────────────────────────────────────────
+    for skill in cand["skills"]:
+        dur = skill.get("duration_months")
+        if isinstance(dur, str):
+            try:
+                skill["duration_months"] = int(dur)
+            except ValueError:
+                skill["duration_months"] = 0
+        elif dur is None:
+            skill["duration_months"] = 0
+
+        end_count = skill.get("endorsements")
+        if isinstance(end_count, str):
+            try:
+                skill["endorsements"] = int(end_count)
+            except ValueError:
+                skill["endorsements"] = 0
+
+    return cand
 
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
 
 # Dataset snapshot date — used as "today" for all ceiling computations.
-# DO NOT replace with datetime.date.today(); the traps must stay stable.
-REFERENCE_DATE = date(2026, 6, 29)
+# REFERENCE_DATE = date(2026, 6, 29)
+_ref_env = os.environ.get("REDROB_REFERENCE_DATE", "2026-06-29")
+try:
+    REFERENCE_DATE = date.fromisoformat(_ref_env)
+except ValueError:
+    raise ValueError(
+        f"Invalid REDROB_REFERENCE_DATE='{_ref_env}'. "
+        f"Expected YYYY-MM-DD (e.g. 2026-06-29)."
+    )
 
 
 # ===========================================================================
@@ -93,12 +162,7 @@ REFERENCE_DATE = date(2026, 6, 29)
 # Sources: The IT Crowd (Reynholm / Initech), Silicon Valley (Pied Piper /
 # Hooli), Batman (Wayne Enterprises), The Simpsons (Globex), The Office
 # (Dunder Mifflin), Iron Man (Stark Industries), ACME (Looney Tunes).
-#
-# v2 FIX — ACME CORP mismatch bug:
-#   In v1, _normalise_company("Acme Corp") → "ACME" (strips "CORP") but the
-#   set contained "ACME CORP", so the lookup always missed.  Fix: run every
-#   set value through the same normaliser at import time so both sides of the
-#   comparison are consistently processed.
+
 
 _RAW_FICTIONAL_COMPANIES: set[str] = {
     "INITECH",
@@ -166,13 +230,8 @@ def check_fictional_companies(candidate: dict[str, Any]) -> tuple[bool, list[str
 # Real Indian startups with documented founding years.
 # A career entry whose start_date predates the company's founding is
 # chronologically impossible.  Tolerance: 30 days (1 month).
-#
-# v2: Expanded from 21 to 90+ companies.
-# Keys are already uppercase with no special chars so _normalise_company
-# leaves them unchanged; candidate input is normalised before lookup.
 
 COMPANY_FOUNDING_YEARS: dict[str, int] = {
-    # ---- original entries ----
     "CRED":                         2018,
     "GLANCE":                       2019,
     "REPHRASE AI":                  2019,
@@ -195,7 +254,6 @@ COMPANY_FOUNDING_YEARS: dict[str, int] = {
     "KHATABOOK":                    2018,
     "OKCREDIT":                     2019,
 
-    # ---- v2 additions ----
     # E-commerce / quick-commerce
     "FLIPKART":                     2007,
     "NYKAA":                        2012,
@@ -353,20 +411,7 @@ def check_company_founding_year(candidate: dict[str, Any]) -> tuple[bool, list[s
 # ===========================================================================
 # Formal UG/PG programmes named after AI / Data Science / ML did not exist
 # before ~2018–2019 in India (AICTE approval timelines).
-#
-# v2 CHANGE — STRICT startswith() FIELD MATCHING:
-#   v1 used `field_keyword in field` (substring).  This misflagged:
-#     "Computer Science and Artificial Intelligence"  ← legitimate pre-2019 CS degree
-#     "Engineering with AI Specialization"            ← legitimate pre-2019 Engg degree
-#
-#   v2 uses field.startswith(keyword), so only programmes whose names
-#   BEGIN with the AI/ML/DS keyword are caught:
-#     FLAGGED   : "Artificial Intelligence"
-#                 "Artificial Intelligence and Machine Learning"
-#                 "Data Science and Analytics"
-#     NOT FLAGGED: "Computer Science and Artificial Intelligence"
-#                  "Electronics and AI"
-#                  "CSE (AI Specialization)"
+
 
 ESTABLISHMENT_CEILINGS: dict[str, dict[str, int]] = {
     "B.TECH": {
@@ -419,9 +464,6 @@ def _degree_prefix(degree: str) -> str | None:
     Return the canonical ESTABLISHMENT_CEILINGS key for a degree string,
     or None if not recognised.
 
-    v2 FIX: v1's first loop had a broken regex-inside-startswith call
-    that never matched anything.  v2 uses a single clean approach:
-    strip dots from both key and degree, then do prefix matching.
     """
     deg_clean = re.sub(r"[^A-Z.]", "", degree.upper().strip().rstrip("."))
     deg_nodot = deg_clean.replace(".", "")
@@ -433,7 +475,6 @@ def _degree_prefix(degree: str) -> str | None:
 
 def _field_starts_with_keyword(field_upper: str, keyword: str) -> bool:
     """
-    v2 strict field matching helper.
     Returns True only if `field_upper` starts with `keyword`.
 
     Caller is responsible for uppercasing `field_upper` before passing in.
@@ -485,8 +526,7 @@ def check_degree_field_ceilings(candidate: dict[str, Any]) -> tuple[bool, list[s
 # ===========================================================================
 # TRAP 4 — Impossible Degree Durations (excessive length)
 # ===========================================================================
-# v2 CHANGE — Relaxed and split into four tiers:
-#
+
 #   M.TECH / M.E       : flag if ≥ 6 y  (was ≥ 4 y)
 #     Rationale: B.Tech+M.Tech integrated programmes = 5 y; BITS WILP
 #     part-time M.Tech runs 3–4 y.  Only flag truly impossible lengths.
@@ -509,7 +549,7 @@ DEGREE_MAX_DURATIONS: list[tuple[list[str], int]] = [
     (["B.SC", "BACHELOR"],      6),
 ]
 
-PHDS_MIN_YEARS = 3   # Ph.D in < 3 years is suspect
+PHDS_MIN_YEARS = 3   
 
 
 def check_impossible_degree_durations(candidate: dict[str, Any]) -> tuple[bool, list[str]]:
@@ -555,8 +595,7 @@ def check_impossible_degree_durations(candidate: dict[str, Any]) -> tuple[bool, 
 # ===========================================================================
 # A skill cannot have been used for more months than the technology has
 # existed as of REFERENCE_DATE (2026-06-29).
-#
-# v2 CHANGE — Skill-name normalisation pass:
+
 #   "Llama Index" → "LLAMAINDEX"
 #   "Hugging Face Transformers" → "HUGGING FACE TRANSFORMERS"
 #   "Sentence Transformer" (singular) → "SENTENCE TRANSFORMERS"
@@ -740,8 +779,7 @@ def check_master_before_bachelor(candidate: dict[str, Any]) -> tuple[bool, list[
 # ===========================================================================
 # TRAP 8 — Corporate Career Started Before Graduation
 # ===========================================================================
-# v2 CHANGE: buffer extended from 12 → 20 months.
-#
+
 # Rationale: Indian campus placement seasons start in October/November of
 # the third year (for a June fourth-year graduation), meaning legitimate
 # offer letters can pre-date graduation by 14–18 months.  A 12-month
@@ -796,13 +834,12 @@ def check_career_before_graduation(candidate: dict[str, Any]) -> tuple[bool, lis
 # ===========================================================================
 # TRAP 9 — Date Inversions
 # ===========================================================================
-# v2 CHANGE: Added sub-check C — education date inversions.
-#
+
 # Sub-check A : career end_date < start_date
 # Sub-check B : redrob_signals signup_date > last_active_date, or
 #               last_active_date is after REFERENCE_DATE (future)
 # Sub-check C : education end_year < start_year  OR
-#               education end_year is impossibly far in the future  [NEW]
+#               education end_year is impossibly far in the future
 
 def check_date_inversions(candidate: dict[str, Any]) -> tuple[bool, list[str]]:
     """
@@ -882,12 +919,11 @@ def check_date_inversions(candidate: dict[str, Any]) -> tuple[bool, list[str]]:
 # ===========================================================================
 # Two jobs at different companies cannot have genuine date overlaps of more
 # than OVERLAP_TOLERANCE_DAYS.
-#
-# v2 CHANGE: Tolerance reduced 60 → 30 days.
+
 # Also added early-exit optimisation: since parsed is sorted by start date,
 # once s2 >= e1 we know no further j-values can overlap with job i.
 
-OVERLAP_TOLERANCE_DAYS = 30   # 1 month (reduced from 60 in v1)
+OVERLAP_TOLERANCE_DAYS = 30   
 
 
 def check_employment_overlap(candidate: dict[str, Any]) -> tuple[bool, list[str]]:
@@ -970,7 +1006,6 @@ def check_experience_exceeds_time_since_grad(candidate: dict[str, Any]) -> tuple
         return False, []
 
     earliest_grad    = min(end_years)
-    # Mid-year (Jun 1) graduation is the generous assumption
     years_since_grad = (REFERENCE_DATE - date(earliest_grad, 6, 1)).days / 365.25
 
     stated_yoe = candidate.get("profile", {}).get("years_of_experience")
@@ -1293,7 +1328,8 @@ if __name__ == "__main__":
                 if not line:
                     continue
                 try:
-                    candidates_list.append(json.loads(line))
+                    raw = json.loads(line)
+                    candidates_list.append(sanitise_candidate(raw))
                 except json.JSONDecodeError as exc:
                     print(f"[WARN] Line {line_no}: JSON parse error — {exc}",
                           file=sys.stderr)
@@ -1329,8 +1365,8 @@ if __name__ == "__main__":
 
     # ---- Save outputs ----
     base_dir      = ".." if os.path.basename(os.getcwd()) == "src" else "."
-    json_out_path = os.path.join(base_dir, "data", "verified_clean_profiles.json")
-    csv_out_path  = os.path.join(base_dir, "data", "verified_clean_profiles.csv")
+    json_out_path = os.path.join(base_dir, "output", "verified_clean_profiles.json")
+    csv_out_path  = os.path.join(base_dir, "output", "verified_clean_profiles.csv")
 
     # JSON — full clean profiles
     try:

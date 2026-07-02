@@ -27,3 +27,8 @@ src/submission.csv
 .vscode/
 .DS_Store
 exploratory_scripts/
+
+# Block heavy dataset copies inside nested deployment configurations
+redrob-ranker/data/candidates.jsonl
+redrob-ranker/data/*.jsonl
+redrob-ranker/data/*.json

@@ -1,0 +1,19 @@
+# Generated at runtime — never commit
+artifacts/*.npy
+artifacts/*.pkl
+artifacts/candidate_meta.json
+artifacts/default_jd_embedded_fallback.txt
+artifacts/.hf_cache/
+submission.csv
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.venv/
+venv/
+
+# Local test leftovers
+*.log
+.DS_Store

@@ -360,26 +360,3 @@ Upload a `candidates.jsonl` file (≤ 100 candidates) or click Run to use the pr
 The sandbox runs on HuggingFace Spaces `cpu-basic` (2 vCPU, 16 GB RAM) — the same resource envelope as the Stage 3 constraint.
 
 ---
-
-## Extending the System
-
-| Change | What to touch |
-|---|---|
-| Add a new ranking signal | One function in `guardrails.py` |
-| Add a new role domain | One entry in `config.py ROLE_CATEGORY_ANCHORS` |
-| Swap the embedding model | Two lines in `config.py` + re-run `setup_models.py` |
-| Support a new JD format | One method in `jd_processor.py` |
-| Change a threshold | One constant in `config.py` |
-
-No stage knows the internal implementation of any other stage. Every boundary is a typed Python dataclass.
-
----
-
-## Project Structure Philosophy
-
-Each file has one clearly defined responsibility and is forbidden from knowing the internals of adjacent files. Stages communicate exclusively through typed dataclasses:
-
-- `JDProfile` — carries all extracted JD parameters through Phases B
-- `RetrievalResult` — carries 6 score arrays from retriever to penalty gate
-- `CandidateScore[]` — carries all intermediate scores from penalty gate to reasoner
-- `ArtifactStore` — shared read-only access to Phase A outputs across all Phase B stages

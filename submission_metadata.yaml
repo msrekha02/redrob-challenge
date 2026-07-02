@@ -10,7 +10,7 @@ primary_contact:
 team_members:
   - name: "Sasirekha"
     email: "sasirekhamopuri02@gmail.com"
-    role: "ML Engineer"        
+    role: "Team Lead"        
   - name: "Indira Tejaswini"
     email: "indu108teju@gmail.com"
     role: "ML Engineer"
@@ -22,44 +22,47 @@ reproduce_command: "python rank.py --candidates ./candidates.jsonl --out ./submi
 
 
 compute:
-  platform: "MacBook Pro M2"                   
+  platform: "Intel Core i5-12450H"                   
   cpu_cores: 8                                  
   ram_gb: 16                                    
-  python_version: "3.11.4"                      
-  os: "macOS 14.2"                             
+  python_version: "3.13.5"                      
+  os: "Windows 11 home 25H2"                             
   uses_gpu_for_inference: false                 
   has_network_during_ranking: false             
   pre_computation_required: true 
-  pre_computation_time_minutes: 0               
+  pre_computation_time_minutes: 15            
 
 
 ai_tools_used:
-  - "Claude"        # e.g. for architecture discussion, code review
-  - "Gemini"        # e.g. for autocomplete
+  - "Claude"
+  - "Gemini"    
 
 ai_usage_summary: |
-  Briefly describe how AI tools were used. Examples:
-  - "Used Claude for code review and architectural discussion. Used Copilot for autocomplete.
-     No candidate data was fed to any LLM."
-  - "Used ChatGPT to debug Python issues and Cursor for refactoring."
-  - "No AI tools used."
+  - "Claude for code review and architectural discussion"        
+  - "Gemini for research and debugging"       
 
 
 methodology_summary: |
-  ≤200 word summary of your approach. Strongly recommended.
-
-  Example:
-  "Rule-based ranker with explicit reasoning capture. Five scoring components
-  (skills, title+career, experience years, location, education) combined with
-  a multiplicative behavioral-signal modifier. The title component is the
-  decisive signal against keyword-stuffer traps; an endorsement-and-duration
-  trust multiplier on skills catches lazy keyword stuffing. Runtime is ~10
-  seconds for 50K candidates on CPU."
+  Two-phase CPU-only ranking pipeline. Phase A runs offline: a 14-trap
+  honeypot filter reduces 100K candidates to producing clean profiles, which
+  are indexed on two independent tracks — role trajectory and capability
+  stack — using BGE-small-en-v1.5 ONNX INT8 embeddings and dual BM25Okapi
+  indexes. Phase B runs per JD in under three minutes: the JD text is
+  parsed with regex and BGE-small to extract YoE range, preferred cities,
+  notice period, and disqualifier conditions dynamically. Hybrid retrieval
+  (dense + sparse, four lists) fused via RRF produces a top-1,000 pool.
+  A 20-signal penalty gate applies availability, location, integrity, and
+  JD-fit multipliers with percentile-clipped score normalisation, reducing
+  to top-200. BGE-reranker-base ONNX INT8 cross-encodes the remaining
+  pairs against the full JD text, producing a final top-100. A honeypot
+  safety net re-runs all 14 traps on the output and backfills if needed.
+  All thresholds are extracted from the JD at runtime — no retraining or
+  reconfiguration required for a new JD or candidate pool.
 
 
 declarations:
   read_submission_spec: true      
   code_is_original_work: true       
   no_collusion: true                
-  honeypot_check_done: false        
+  honeypot_check_done: true      
   reproduction_tested: true        

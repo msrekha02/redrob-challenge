@@ -32,3 +32,7 @@ exploratory_scripts/
 redrob-ranker/data/candidates.jsonl
 redrob-ranker/data/*.jsonl
 redrob-ranker/data/*.json
+
+**/candidates.jsonl
+**/*.jsonl
+**/*.json

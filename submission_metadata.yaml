@@ -1,0 +1,65 @@
+# Redrob Hackathon — Submission Metadata Template
+
+team_name: "StarForge" 
+
+primary_contact:
+  name: "Sasirekha"
+  email: "sasirekhamopuri02@gmail.com"  
+  phone: "+91-7013822688"      
+
+team_members:
+  - name: "Sasirekha"
+    email: "sasirekhamopuri02@gmail.com"
+    role: "ML Engineer"        
+  - name: "Indira Tejaswini"
+    email: "indu108teju@gmail.com"
+    role: "ML Engineer"
+
+
+github_repo: "https://github.com/msrekha02/redrob-challenge"
+sandbox_link: "https://huggingface.co/spaces/msrekha/redrob-ranker"
+reproduce_command: "python rank.py --candidates ./candidates.jsonl --out ./submission.csv"
+
+
+compute:
+  platform: "MacBook Pro M2"                   
+  cpu_cores: 8                                  
+  ram_gb: 16                                    
+  python_version: "3.11.4"                      
+  os: "macOS 14.2"                             
+  uses_gpu_for_inference: false                 
+  has_network_during_ranking: false             
+  pre_computation_required: true 
+  pre_computation_time_minutes: 0               
+
+
+ai_tools_used:
+  - "Claude"        # e.g. for architecture discussion, code review
+  - "Gemini"        # e.g. for autocomplete
+
+ai_usage_summary: |
+  Briefly describe how AI tools were used. Examples:
+  - "Used Claude for code review and architectural discussion. Used Copilot for autocomplete.
+     No candidate data was fed to any LLM."
+  - "Used ChatGPT to debug Python issues and Cursor for refactoring."
+  - "No AI tools used."
+
+
+methodology_summary: |
+  ≤200 word summary of your approach. Strongly recommended.
+
+  Example:
+  "Rule-based ranker with explicit reasoning capture. Five scoring components
+  (skills, title+career, experience years, location, education) combined with
+  a multiplicative behavioral-signal modifier. The title component is the
+  decisive signal against keyword-stuffer traps; an endorsement-and-duration
+  trust multiplier on skills catches lazy keyword stuffing. Runtime is ~10
+  seconds for 50K candidates on CPU."
+
+
+declarations:
+  read_submission_spec: true      
+  code_is_original_work: true       
+  no_collusion: true                
+  honeypot_check_done: false        
+  reproduction_tested: true        

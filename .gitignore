@@ -23,6 +23,7 @@ verified_clean_profiles.csv
 !submission.csv
 !output/submission.csv
 src/submission.csv
+output/*.xlsx
 
 # IDE & OS Noise
 .vscode/

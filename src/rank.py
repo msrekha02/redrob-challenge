@@ -1,5 +1,5 @@
 """
-rank.py — CLI Entry Point (v5)
+rank.py — CLI Entry Point 
 ================================
 Usage:
     # Default JD (bundled with this submission) — what Stage 3 runs:
@@ -8,31 +8,6 @@ Usage:
     # Explicit different JD — dynamic JD processing remains fully available:
     python rank.py --jd_path other_role.docx --candidates ./candidates.jsonl --out ./submission.csv
 
-v5 changes:
-
-  1. --jd_path is now OPTIONAL, not required. The Stage 3 evaluator's
-     literal reproduction command is:
-         python rank.py --candidates ./candidates.jsonl --out ./submission.csv
-     with no --jd_path at all. A required argument here would make that
-     exact command fail outright — disqualifying the submission at Stage 3
-     regardless of composite score. When --jd_path is omitted, rank.py
-     resolves a default JD via DEFAULT_JD_SOURCES below: first the bundled
-     data/job_description.docx file, then (only if that's missing for any
-     reason — wrong working directory, file excluded from a packaging
-     step) an embedded verbatim copy of the same JD text as a last-resort
-     fallback, so ranking can proceed even in a maximally stripped-down
-     reproduction environment. The dynamic JD-processing capability itself
-     is untouched: passing --jd_path still fully overrides the default and
-     works exactly as before for any other JD.
-
-  2. --out added as the primary output flag name, matching the evaluator's
-     exact example command. --output is kept as a backward-compatible
-     alias (whichever is actually passed wins; if neither is passed, the
-     config default is used).
-
-  3. jd_profile.category_low_confidence is now threaded into retrieve(),
-     activating the BM25-bias routing in retriever.py for out-of-
-     distribution JDs (see retriever.py's module docstring).
 """
 
 from __future__ import annotations
@@ -51,7 +26,7 @@ from reasoner import export_csv
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Default JD resolution (v5)
+# Default JD resolution 
 # ─────────────────────────────────────────────────────────────────────────────
 
 # Candidate filenames checked, in order, when --jd_path isn't supplied.

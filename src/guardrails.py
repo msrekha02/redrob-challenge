@@ -1,39 +1,6 @@
 """
 guardrails.py — Production: All Penalties + Cross-Encoder (v3)
-=================================================================
-v3 CHANGES (this revision):
-  1. Removed the hard Layer-0 binary DQ for consulting/research career
-     history (DQ-1, DQ-2). Replaced with continuous, recency-weighted,
-     content-aware multipliers (see _compute_consulting_penalty_multiplier,
-     _compute_research_penalty_multiplier) — a job's pull on the penalty
-     decays the further in the past it ended, and a "consulting firm" job
-     whose own description shows real production/infra signal counts at a
-     fraction of full weight. No candidate is ever zeroed out purely by a
-     company-name match against a fixed list; a genuinely current, recent,
-     pure consulting/research career with zero production signal still
-     gets crushed toward a steep floor — functionally equivalent to
-     disqualification for the case the JD actually targets, without an
-     absolute, context-blind cutoff catching edge cases it shouldn't.
-  2. apply_penalties() now does the semantic scoring in two passes: first
-     a vectorized pass computes the raw combined dense score for every
-     retrieved candidate and applies a robust (percentile-clipped) min-max
-     normalization across the pool BEFORE any behavioral multiplier is
-     applied. Raw BGE cosine similarities cluster tightly across a
-     candidate pool; multiplying that narrow band directly by behavioral
-     multipliers let behavioral signal dominate the ranking. Stretching to
-     the full [0,1] range first restores the intended balance between
-     semantic relevance and behavioral signal.
-  3. Field rename: consulting_dq_applies/research_dq_applies →
-     consulting_penalty_active/research_penalty_active throughout, since
-     they no longer gate an absolute disqualification (see jd_processor.py).
 
-Prior fixes retained from earlier revisions:
-  • m_avail/m_loc formula: scales the PENALTY by importance, not the score
-    directly (importance=0 → no penalty; importance=1 → full penalty).
-  • Zero-anchor guard on domain-mismatch check.
-  • Dynamic preferred_cities, framework-only-AI / non-coding-senior /
-    CV-speech-without-NLP signals, YoE range penalty, honeypot safety net,
-    ONNX INT8 model loading via model_engine.py — all unchanged in this pass.
 """
 
 from __future__ import annotations
@@ -237,7 +204,7 @@ def _compute_research_penalty_multiplier(snap: dict, jd_profile: JDProfile) -> t
 
 def _check_dq_consulting_literal(snap: dict, jd_profile: JDProfile) -> tuple[bool, str]:
     """
-    DQ-1 (restored, v4): the JD's literal wording — "People who have only
+    DQ-1 : the JD's literal wording — "People who have only
     worked at consulting firms... in their entire career" — is an explicit
     "will not move forward" hard disqualifier, not a soft one. Fires ONLY
     when EVERY career_history entry matches CONSULTING_FIRMS (the literal
@@ -266,7 +233,7 @@ def _check_dq_consulting_literal(snap: dict, jd_profile: JDProfile) -> tuple[boo
 
 def _check_dq_research_literal(snap: dict, jd_profile: JDProfile) -> tuple[bool, str]:
     """
-    DQ-2 (restored, v4): the JD's literal wording — "If you've spent your
+    DQ-2 : the JD's literal wording — "If you've spent your
     career in pure research environments... without any production
     deployment — we will not move forward. We are explicit about this." —
     is an explicit hard disqualifier. Fires ONLY when EVERY career_history
@@ -297,7 +264,7 @@ def _check_dq_research_literal(snap: dict, jd_profile: JDProfile) -> tuple[bool,
 def apply_hard_disqualifiers(snap: dict, jd_profile: JDProfile) -> tuple[bool, str]:
     """
     Layer 0 — genuinely binary structural disqualifiers. DQ-1/DQ-2 were
-    restored here (v4) at the user's explicit request, matching the JD's
+    restored here at the user's explicit request, matching the JD's
     own literal "we will not move forward" wording for the LITERAL 100%
     case only. Every candidate who isn't literally 100% consulting or
     100% pure research falls through to the continuous, recency-weighted
@@ -399,11 +366,6 @@ def _check_non_coding_senior(snap: dict, jd_profile: JDProfile) -> tuple[float, 
 
     Detects candidates currently in executive/architecture roles for > 18 months.
     Fires ONLY for engineering JDs (jd_profile.flags.is_engineering=True).
-
-    v4 — Founding-team bypass, added at user request: a founding-team JD
-    often genuinely wants leadership-experienced people who can own
-    architectural decisions, so this penalty bypasses when
-    jd_profile.flags.is_founding_team is True.
 
     IMPORTANT — this bypass is gated by jd_profile.flags.requires_code_writing
     (an existing flag matching JD phrases like "this role writes code" /

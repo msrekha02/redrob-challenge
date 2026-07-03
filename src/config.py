@@ -3,51 +3,6 @@ config.py  — Production Dynamic Brain (v3)
 ============================================
 All hyperparameters, thresholds, and dynamic structures.
 
-v3 CHANGES (this revision) — three architectural fixes:
-
-  1. TEXT-NATIVE DOMAIN INDEPENDENCE (replaces winner-take-all bucket lookup)
-     ROLE_CATEGORY_ANCHORS are no longer used to pick ONE winning category.
-     jd_processor.py now computes a softmax-weighted BLEND across all 10
-     anchors' similarity scores, and every downstream weight (role_weight,
-     cap_weight, avail_importance, loc_importance, domain_mismatch_threshold)
-     is a similarity-weighted average across categories, not a single
-     category's fixed profile. A JD that doesn't strongly resemble any of
-     the 10 anchors (e.g. "Quantum Cryptographer", "Chef") naturally
-     degrades toward a near-uniform blend (close to the "default" profile)
-     rather than being force-fit into the least-wrong bucket.
-     Why not a separate zero-shot classifier model instead: a second model
-     (even a small one) adds disk/RAM/loading-time/correctness surface for
-     marginal benefit over blending similarities I'm already computing —
-     under a 5GB disk / 16GB RAM / 5-min budget that's reproduced in a
-     sandboxed Docker container, that tradeoff isn't worth it. The blend
-     achieves the same graceful-degradation property with zero added cost.
-
-  2. RECENCY-WEIGHTED CONSULTING/RESEARCH PENALTY (replaces hard binary DQ)
-     consulting_dq_applies / research_dq_applies are RENAMED to
-     consulting_penalty_active / research_penalty_active and no longer
-     trigger an absolute Layer-0 score=0.0 cut. Instead, guardrails.py
-     computes a continuous multiplier from (a) how RECENT the
-     consulting/research-only time was — a job ending 8 years ago carries
-     far less weight than a current role — and (b) whether the role's own
-     description shows production/infra signal despite the company being a
-     nominal "consulting firm" (some people do build real platforms while
-     technically employed by a services company). A candidate whose entire
-     career is CURRENTLY, RECENTLY, and PURELY consulting/research with zero
-     production signal still gets crushed toward the floor — functionally
-     equivalent to disqualification for the case the JD actually targets —
-     but an exceptional candidate with old consulting experience and years
-     of recent product-company work is never zeroed out by a blunt rule.
-
-  3. ROBUST MIN-MAX NORMALIZATION of the combined dense (semantic) score
-     BGE-small cosine similarities cluster tightly across a candidate pool
-     (e.g. top matches all sitting in a narrow 0.78-0.86 band). Multiplying
-     that narrow band directly by behavioral multipliers (which can range
-     from ~0.05 to 1.10) lets behavioral signal dominate the ranking and
-     drown out actual technical/role relevance. guardrails.py now stretches
-     the combined dense score to use the full [0,1] range via percentile-
-     clipped min-max normalization (2nd/98th percentile, not raw min/max —
-     a single outlier candidate shouldn't compress everyone else's spread)
-     BEFORE any behavioral multiplier is applied.
 """
 
 from __future__ import annotations

@@ -1,7 +1,7 @@
 """
 retriever.py  v2 — Dual-Track Retrieval with Dynamic Weights
 =============================================================
-Same O(N) dual-track logic as v1. Key v2 change:
+Same O(N) dual-track logic:
   • retrieve() now accepts role_weight + cap_weight parameters
     so JDProfile.role_weight / cap_weight flow through from JDProcessor.
   • The weights are used for logging only in this stage (RRF doesn't weight

@@ -1,47 +1,7 @@
 """
 jd_processor.py — Dynamic JD Profile + 4-Way Multi-Cast (v4)
-===============================================================
-v4 changes (this revision) — four robustness fixes:
 
-  1. YoE range extraction now scans the FULL JD text for every range-like
-     mention (re.finditer, not the first re.search match) and aggregates
-     to the WIDEST bounds found — min(all minimums), max(all maximums) —
-     rather than whichever single phrase happened to match first. This
-     errs toward inclusivity: a JD that states "5-9 years" in the main
-     description and "3+ years in distributed systems" in a sub-bullet
-     shouldn't get arbitrarily narrowed by picking just one. Open-ended
-     upper bounds ("10+ years") now map to a numeric ceiling
-     (YOE_OPEN_ENDED_CEILING = 99) instead of None, so downstream
-     comparisons and formatting never need a None-guard for the upper
-     bound specifically.
 
-  2. Notice-period extraction is now an explicit contextual cascade tried
-     in priority order — compact tags ("sub-30") first, then sentence-
-     style statements ("notice period of 45 days"), then colloquial
-     timeframes converted to days ("immediate joiner", "within 3 weeks",
-     "2 months notice"), then the original generic numeric-near-context
-     catch-all as the lowest-priority tier. Every tier is independently
-     bounded (1-365 days); the function can never raise and never returns
-     an out-of-range number. Falls through to None — a documented,
-     deliberate "JD doesn't state a notice period" signal, not a crash.
-
-  3. domain_mismatch_threshold now AUTO-EXPANDS when category-blend
-     confidence is low. A JD that doesn't resemble any of the known
-     categories well (e.g. "Technical Writer", "Chef") blends toward
-     "default", but the resulting threshold is still an ABSOLUTE cosine
-     cutoff checked against a near-uninformative blended anchor — left
-     untouched, this can fail almost every candidate's role vector and
-     silently empty the ranked pool for any out-of-distribution JD. The
-     threshold now relaxes toward a floor proportionally to how far below
-     the low-confidence cutoff the actual similarity sits.
-
-  4. summary() (and the equivalent log lines in _build_profile) no longer
-     assume yoe_min/yoe_max/notice_period_days_stated are always numeric.
-     A shared _safe_fmt() helper handles None without relying on bare
-     f-string interpolation happening to be forgiving — protects against
-     a future format-spec change (e.g. adding ":.0f") silently introducing
-     a crash, and against an automated test sandbox feeding many JDs
-     through in sequence where any single crash fails the whole batch.
 """
 
 from __future__ import annotations
@@ -815,7 +775,7 @@ class JDProcessor:
         """
         Cosine similarity of the JD's role vector against every category
         anchor (the real 10, not "default" — "default" gets a flat prior
-        instead of an embedding, see _compute_blended_weights).
+        instead of an embedding, see _compute_blended_weights)
         """
         model = self._load_model()
         sims: dict[str, float] = {}

@@ -1,40 +1,7 @@
 """
 reasoner.py — Deterministic Reasoning Generator + CSV Exporter (v5)
-=====================================================================
-v5 changes — rank-consistent, tightened reasoning:
 
-  Stage 4 (manual judge review) explicitly checks rank consistency: does
-  the reasoning's TONE match the rank? A rank-5 candidate written with
-  hedging, critical language, or a rank-95 candidate written with glowing,
-  unqualified enthusiasm both signal that the reasoning text was generated
-  independently of the actual ranking — exactly the kind of tell that
-  separates programmatic reasoning from genuinely judge-convincing output.
-
-  Two structural changes address this directly:
-
-  1. Rank-tier-calibrated language. generate_reasoning() now computes
-     which quartile-ish tier a candidate's rank falls into (top / upper-mid
-     / mid / lower, based on percentile position within the submitted
-     set, not a hardcoded "rank <= 15") and selects opening/connecting
-     language accordingly — confident and assertive at the top, openly
-     hedged and gap-led toward the bottom. The underlying FACTS never
-     change (a weak candidate is never described as strong), only how
-     confidently they're framed.
-
-  2. Genuine 1-2 sentence output, not a semicolon-joined fact dump. The
-     old version joined every fired signal fragment with "; " into one
-     long run-on clause, then appended a bracketed technical score tag —
-     readable as a data dump, not a human justification, and the tag
-     itself reads as templated/robotic precisely because it's identical
-     in structure for every single row. v5 selects the 1-2 MOST important
-     signals (prioritized, not all of them), composes them into actual
-     sentences with normal punctuation, and drops the bracketed tag from
-     the user-facing text entirely — CandidateScore's numeric fields
-     remain available for any separate debug/log output (see rank.py's
-     own top-10 console preview), they just don't need to live inside the
-     CSV's reasoning column to be useful.
-
-  Everything else — deep fact-hooking into specific profile fields (never
+  Deep fact-hooking into specific profile fields (never
   a generic "Candidate matches skills"), honest gap acknowledgement,
   full dynamism across any JD via jd_flags/jd_profile — is unchanged.
 """

@@ -86,7 +86,7 @@ submission.csv
 
 ```bash
 # 1. Install dependencies
-pip install -r requirements.txt
+pip install -r src/requirements.txt
 
 # 2. Download and export models (run once)
 python src/setup_models.py
